@@ -26,7 +26,7 @@ class PDOMysql
             $this->dbHost = "127.0.0.1";
         }
         $this->dbUserName = $dbinfo["user"];
-        $this->dbPassword = $dbinfo["passward"];
+        $this->dbPassword = $dbinfo["password"];
         $this->dbDatabase = $dbinfo["database"];
         $this->dbCharset = $dbinfo["charset"];
         if(! $this->dbCharset)

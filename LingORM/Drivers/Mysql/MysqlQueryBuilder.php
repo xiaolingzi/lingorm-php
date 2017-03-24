@@ -74,7 +74,7 @@ class MysqlQueryBuilder extends AbstractQueryBuilder
 
     public function from($table)
     {
-        $this->fromSql = $table->__table_name . " " . $table->__alias_table_name;
+        $this->fromSql = $table->__database.".".$table->__table_name . " " . $table->__alias_table_name;
         return $this;
     }
 
@@ -227,6 +227,7 @@ class MysqlQueryBuilder extends AbstractQueryBuilder
         {
             $this->limitSql = "limit " . $count;
         }
+        return $this;
     }
 
     public function getResult($classObject = null)
