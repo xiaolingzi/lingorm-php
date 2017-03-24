@@ -7,6 +7,6 @@ class Config
 	
 	static public function getDatabaseConfigPath()
 	{
-		return dirname(dirname(__DIR__)).'/config/'.ENVIRONMENT.'/database_config.json';
+		return dirname($_SERVER['SCRIPT_NAME']).'/config/database_config.json';
 	}
 }
