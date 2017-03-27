@@ -240,11 +240,11 @@ function getPropertyName($columnName)
 function getConnection()
 {
     $dbInfo = array(
-            "host" => "120.77.2.148",
+            "host" => "127.0.0.1",
             "db" => "information_schema",
             "charset" => "utf8mb4",
-            "user" => "db_inmotion",
-            "password" => "Im639()db" 
+            "user" => "xxx",
+            "password" => "xxxxx" 
     );
     $dbConnection = new \PDO('mysql:host=' . $dbInfo["host"] . ';dbname=' . $dbInfo["db"] . ';charset=' . $dbInfo["charset"], $dbInfo["user"], $dbInfo["password"]);
     
