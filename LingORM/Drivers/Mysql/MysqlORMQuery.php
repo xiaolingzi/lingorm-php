@@ -286,9 +286,4 @@ class MysqlORMQuery implements IORMQuery
         return $result;
     }
     
-    
-    public function createQueryBuilder()
-    {
-        return new MysqlQueryBuilder($this->_pdoMysql);
-    }
 }

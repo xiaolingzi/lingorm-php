@@ -9,6 +9,7 @@ use LingORM\Mapping\DocParser;
 use LingORM\Drivers\Mysql\MysqlORMQuery;
 use LingORM\Drivers\Mysql\MysqlQuery;
 use LingORM\Config;
+use LingORM\Drivers\Mysql\MysqlQueryBuilder;
 
 class Query
 {
@@ -97,6 +98,17 @@ class Query
         	    return new MysqlORMQuery($this->_databaseInfo);
         	default:
         	    return new MysqlORMQuery($this->_databaseInfo);
+        }
+    }
+    
+    public function createQueryBuilder()
+    {
+        switch ($this->_databaseInfo["driver"])
+        {
+        	case "pdo_mysql":
+        	    return new MysqlQueryBuilder($this->_databaseInfo);
+        	default:
+        	    return new MysqlQueryBuilder($this->_databaseInfo);
         }
     }
     

@@ -14,6 +14,4 @@ interface IORMQuery
 	public function deleteBy($table,AbstractWhereExpression $where);
 	
 	
-	public function createQueryBuilder();
-	
 }

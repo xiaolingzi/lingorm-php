@@ -11,9 +11,9 @@ class MysqlQueryBuilder extends AbstractQueryBuilder
 {
     private $_pdoMysql;
 
-    public function __construct(PDOMysql $pdoMysql)
+    public function __construct($databaseInfo)
     {
-        $this->_pdoMysql = $pdoMysql;
+        $this->_pdoMysql = new PDOMysql($databaseInfo);
     }
 
     public function select($colomnArgs)
