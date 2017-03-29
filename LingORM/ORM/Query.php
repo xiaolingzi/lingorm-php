@@ -22,9 +22,14 @@ class Query
      */
     public function __construct($key=null)
     {
-        if(!empty($key))
+        if(empty($key))
         {
-        	$this->_databaseInfo=(new DatabaseConfig())->getDatabaseInfoByKey($key);
+        	$key = Config::DEFAULT_DATABASE_SERVER;
+        }
+        $this->_databaseInfo=(new DatabaseConfig())->getDatabaseInfoByKey($key);
+        if(empty($this->_databaseInfo))
+        {
+        	throw new \Exception("Please specify which database to use!");
         }
     }
     

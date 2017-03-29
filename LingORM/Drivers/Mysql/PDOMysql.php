@@ -11,9 +11,9 @@ class PDOMysql
     private $dbCharset;
     private $dbConnection;
 
-    public function __construct($database)
+    public function __construct($databaseInfo)
     {
-        $this->getConfig($database);
+        $this->getConfig($databaseInfo);
         $this->connect();
     }
 

@@ -22,7 +22,11 @@ class MysqlORMQuery implements IORMQuery
         	throw new \Exception("Missing the where condition!");
         }
         
-        $tableName = $table->__database.".".$table->__table_name;
+        $tableName = $table->__table_name;
+        if(!empty($table->__database))
+        {
+            $tableName = $table->__database.".".$tableName;
+        }
         
         $sql = "select * from " . $tableName ." ".$table->__alias_table_name." where ".$where->sql;
         if(!empty($order) && !empty($order->sql))
@@ -44,7 +48,11 @@ class MysqlORMQuery implements IORMQuery
         	throw new \Exception("Missing the where condition!");
         }
         
-        $tableName = $table->__database.".".$table->__table_name;
+        $tableName = $table->__table_name;
+        if(!empty($table->__database))
+        {
+            $tableName = $table->__database.".".$tableName;
+        }
         
         $sql = "select * from " . $tableName ." ".$table->__alias_table_name." where ".$where->sql;
         if(!empty($order) && !empty($order->sql))
@@ -80,8 +88,13 @@ class MysqlORMQuery implements IORMQuery
         {
             throw new \Exception("The entity class is not valid!");
         }
+        
         $tableName = $table->name;
-        $paramArr = $paramArr = $this->getInsertParams($table->fieldArr);
+        if(!empty($table->database))
+        {
+            $tableName = $table->database.".".$tableName;
+        }
+        $paramArr = $this->getInsertParams($table->fieldArr);
         return $this->_pdoMysql->insert($tableName, $paramArr);
     }
 
@@ -94,6 +107,10 @@ class MysqlORMQuery implements IORMQuery
             throw new \Exception("The entity class is not valid!");
         }
         $tableName = $table->name;
+        if(!empty($table->database))
+        {
+            $tableName = $table->database.".".$tableName;
+        }
         $insertEntityArr = array();
         foreach($entityArr as $entity)
         {
@@ -121,6 +138,7 @@ class MysqlORMQuery implements IORMQuery
             }
             $paramArr[$field->name] = $this->getFieldValue($field->value,$field->type);
         }
+        return $paramArr;
     }
 
     public function update($entity)
@@ -132,6 +150,10 @@ class MysqlORMQuery implements IORMQuery
             throw new \Exception("The entity class is not valid!");
         }
         $tableName = $table->name;
+        if(!empty($table->database))
+        {
+            $tableName = $table->database.".".$tableName;
+        }
         $paramArr = array();
         
         $idArr = array();
@@ -162,6 +184,10 @@ class MysqlORMQuery implements IORMQuery
             throw new \Exception("The entity class is not valid!");
         }
         $tableName = $table->name;
+        if(!empty($table->database))
+        {
+            $tableName = $table->database.".".$tableName;
+        }
         $idFieldName = "";
         $updateEntityArr = array();
         foreach($entityArr as $entity)
@@ -240,8 +266,12 @@ class MysqlORMQuery implements IORMQuery
                 $setSql.=", ".$tempSql;
             }
         }
-    
-        $tableName = $table->__database.".".$table->__table_name;
+        
+        $tableName = $table->__table_name;
+        if(!empty($table->__database))
+        {
+            $tableName = $table->__database.".".$tableName;
+        }
     
         $sql = "update ". $tableName . " " .$table->__alias_table_name." set ". $setSql ." where ".$where->sql;
         
@@ -258,6 +288,10 @@ class MysqlORMQuery implements IORMQuery
             throw new \Exception("The entity class is not valid!");
         }
         $tableName = $table->name;
+        if(!empty($table->database))
+        {
+            $tableName = $table->database.".".$tableName;
+        }
         $idArr = array();
         foreach($table->fieldArr as $field)
         {
@@ -278,7 +312,11 @@ class MysqlORMQuery implements IORMQuery
             throw new \Exception("Missing the where condition!");
         }
         
-        $tableName = $table->__database.".".$table->__table_name;
+        $tableName = $table->__table_name;
+        if(!empty($table->__database))
+        {
+            $tableName = $table->__database.".".$tableName;
+        }
         
         $sql = "delete ".$table->__alias_table_name." from " . $tableName ." ".$table->__alias_table_name." where ".$where->sql;
         
