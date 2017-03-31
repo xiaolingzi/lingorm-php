@@ -94,7 +94,7 @@ function generateEntity($db, $tb,$dir)
             }
             if($column["COLUMN_KEY"] == "PRI")
             {
-                $columnProperty .= ', isId=1';
+                $columnProperty .= ', primaryKey=1';
             }
             if($column["EXTRA"] == "auto_increment")
             {
