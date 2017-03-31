@@ -101,9 +101,9 @@ class DocParser
 	    	    {
 	    	        $column->isGenerated=$paramArr["isGenerated"];
 	    	    }
-	    	    if(array_key_exists("isId", $paramArr))
+	    	    if(array_key_exists("primaryKey", $paramArr))
 	    	    {
-	    	        $column->isId=$paramArr["isId"];
+	    	        $column->primaryKey=$paramArr["primaryKey"];
 	    	    }
 	    	}
 	    	

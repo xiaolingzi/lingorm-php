@@ -7,6 +7,6 @@ class Column
 	public $type;
 	public $length;
 	public $isGenerated;
-	public $isId;
+	public $primaryKey;
 	public $value;
 }

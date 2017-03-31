@@ -1,4 +1,5 @@
 <?php
+
 namespace LingORM\Drivers\Mysql;
 
 use LingORM\Mapping\DocParser;
@@ -15,67 +16,66 @@ class MysqlORMQuery implements IORMQuery
         $this->_pdoMysql = new PDOMysql($databaseInfo);
     }
 
-    public function fetchOne($table,AbstractWhereExpression $where,AbstractOrderExpression $order=null)
+    public function fetchOne($table, AbstractWhereExpression $where, AbstractOrderExpression $order = null)
     {
         if(empty($where))
         {
-        	throw new \Exception("Missing the where condition!");
+            throw new \Exception("Missing the where condition!");
         }
         
         $tableName = $table->__table_name;
-        if(!empty($table->__database))
+        if(! empty($table->__database))
         {
-            $tableName = $table->__database.".".$tableName;
+            $tableName = $table->__database . "." . $tableName;
         }
         
-        $sql = "select * from " . $tableName ." ".$table->__alias_table_name." where ".$where->sql;
-        if(!empty($order) && !empty($order->sql))
+        $sql = "select * from " . $tableName . " " . $table->__alias_table_name . " where " . $where->sql;
+        if(! empty($order) && ! empty($order->sql))
         {
-        	$sql.=" order by ".$order->sql;
+            $sql .= " order by " . $order->sql;
         }
         
         $tempResult = $this->_pdoMysql->fetchOne($sql, $where->params);
-        $parser=new DocParser($table);
-        $result=$parser->getObjectFromArray($tempResult);
+        $parser = new DocParser($table);
+        $result = $parser->getObjectFromArray($tempResult);
         return $result;
     }
-    
-    
-    public function fetchAll($table,AbstractWhereExpression $where,AbstractOrderExpression $order=null,$top=0)
+
+    public function fetchAll($table, AbstractWhereExpression $where, AbstractOrderExpression $order = null, $top = 0)
     {
         if(empty($where))
         {
-        	throw new \Exception("Missing the where condition!");
+            throw new \Exception("Missing the where condition!");
         }
         
         $tableName = $table->__table_name;
-        if(!empty($table->__database))
+        if(! empty($table->__database))
         {
-            $tableName = $table->__database.".".$tableName;
+            $tableName = $table->__database . "." . $tableName;
         }
         
-        $sql = "select * from " . $tableName ." ".$table->__alias_table_name." where ".$where->sql;
-        if(!empty($order) && !empty($order->sql))
+        $sql = "select * from " . $tableName . " " . $table->__alias_table_name . " where " . $where->sql;
+        if(! empty($order) && ! empty($order->sql))
         {
-        	$sql.=" order by ".$order->sql;
+            $sql .= " order by " . $order->sql;
         }
         
-        $top=intval($top);
-        if($top>0)
+        $top = intval($top);
+        if($top > 0)
         {
-            $sql.=" order by ".$order->sql." limit ".$top;
+            $sql .= " order by " . $order->sql . " limit " . $top;
         }
         
         $tempResult = $this->_pdoMysql->fetchAll($sql, $where->params);
-        $result=array();
-        $parser=new DocParser($table);
-        if(!empty($tempResult))
+        $result = array();
+        $parser = new DocParser($table);
+        if(! empty($tempResult))
         {
-        	for($i=0;$i<count($tempResult);$i++)
-        	{
-        		$entity=$parser->getObjectFromArray($tempResult[$i]);
-        		array_push($result, $entity);
-        	}
+            for($i = 0; $i < count($tempResult); $i ++)
+            {
+                $entity = $parser->getObjectFromArray($tempResult[$i]);
+                array_push($result, $entity);
+            }
         }
         return $result;
     }
@@ -90,12 +90,29 @@ class MysqlORMQuery implements IORMQuery
         }
         
         $tableName = $table->name;
-        if(!empty($table->database))
+        if(! empty($table->database))
         {
-            $tableName = $table->database.".".$tableName;
+            $tableName = $table->database . "." . $tableName;
         }
-        $paramArr = $this->getInsertParams($table->fieldArr);
-        return $this->_pdoMysql->insert($tableName, $paramArr);
+        $fieldStr = "";
+        $valueStr = "";
+        $paramArr = array();
+        foreach($table->fieldArr as $field)
+        {
+            if($field->isGenerated)
+            {
+                continue;
+            }
+            $fieldStr .= $field->name . ",";
+            $valueStr .= ":" . $field->name . ",";
+            $paramArr[$field->name] = $this->getFieldValue($field->value, $field->type);
+        }
+        $fieldStr = trim($fieldStr, ",");
+        $valueStr = trim($valueStr, ",");
+        
+        $sql = "insert into $tableName ($fieldStr) values ($valueStr)";
+        
+        return $this->_pdoMysql->insert($sql, $paramArr);
     }
 
     public function batchInsert($entityArr)
@@ -107,41 +124,50 @@ class MysqlORMQuery implements IORMQuery
             throw new \Exception("The entity class is not valid!");
         }
         $tableName = $table->name;
-        if(!empty($table->database))
+        if(! empty($table->database))
         {
-            $tableName = $table->database.".".$tableName;
-        }
-        $insertEntityArr = array();
-        foreach($entityArr as $entity)
-        {
-            $parser = new DocParser($entity);
-            $table = $parser->getTable();
-            $paramArr = $this->getInsertParams($table->fieldArr);
-            array_push($insertEntityArr, $paramArr);
+            $tableName = $table->database . "." . $tableName;
         }
         
-        return $this->_pdoMysql->batchInsert($tableName, $insertEntityArr);
-    }
-    
-    /**
-     * get all the fields inserted 
-     * @param array $fieldArr
-     */
-    private function getInsertParams($fieldArr)
-    {
-        $paramArr = array();
-        foreach($fieldArr as $field)
+        $fieldStr = "";
+        foreach ($table->fieldArr as $field)
         {
             if($field->isGenerated)
             {
                 continue;
             }
-            $paramArr[$field->name] = $this->getFieldValue($field->value,$field->type);
+        	$fieldStr.=$field->name.",";
         }
-        return $paramArr;
+        $fieldStr = trim($fieldStr,",");
+        
+        $valueStr = "";
+        $paramArr = array();
+        for($i=0;$i<count($entityArr);$i++)
+        {
+            $parser = new DocParser($entityArr[$i]);
+            $table = $parser->getTable();
+            $tempValueStr = "";
+            foreach ($table->fieldArr as $field)
+            {
+                if($field->isGenerated)
+                {
+                    continue;
+                }
+            	$tempFieldName = $field->name.$i;
+            	$tempValueStr.=":".$tempFieldName.",";
+            	$paramArr[$tempFieldName] = $this->getFieldValue($field->value, $field->type);
+            }
+            $tempValueStr = trim($tempValueStr,",");
+            $valueStr .= "(".$tempValueStr."),";
+        }
+        $valueStr = trim($valueStr,",");
+        
+        $sql = "insert into $tableName ($fieldStr) values $valueStr";
+        
+        return $this->_pdoMysql->excute($sql, $paramArr);
     }
 
-    public function update($entity)
+    public function update($entity, $nullIgnore = FALSE)
     {
         $parser = new DocParser($entity);
         $table = $parser->getTable();
@@ -150,32 +176,57 @@ class MysqlORMQuery implements IORMQuery
             throw new \Exception("The entity class is not valid!");
         }
         $tableName = $table->name;
-        if(!empty($table->database))
+        if(! empty($table->database))
         {
-            $tableName = $table->database.".".$tableName;
+            $tableName = $table->database . "." . $tableName;
         }
+        
+        $setStr = "";
+        $whereStr = "";
         $paramArr = array();
         
-        $idArr = array();
         foreach($table->fieldArr as $field)
         {
-            if($field->isId)
+            if($field->primaryKey)
             {
-                $idArr[$field->name] = $field->value;
+                if(empty($whereStr))
+                {
+                	$whereStr = $field->name. "=:".$field->name; 
+                }
+                else 
+                {
+                    $whereStr .= " and ".$field->name. "=:".$field->name;
+                }
+                $paramArr[$field->name] = $this->getFieldValue($field->value, $field->type);
             }
+            
             if($field->isGenerated)
             {
                 continue;
             }
-            $paramArr[$field->name] = $this->getFieldValue($field->value,$field->type);
+            if($nullIgnore && is_null($field->value))
+            {
+                continue;
+            }
+            $setStr .= $field->name. "=:".$field->name.","; 
+            $paramArr[$field->name] = $this->getFieldValue($field->value, $field->type);
         }
-        return $this->_pdoMysql->updateById($tableName, $paramArr, $idArr);
+        $setStr = trim($setStr,",");
+        
+        if(empty($whereStr))
+        {
+        	throw new \Exception("The 'update' method require at least one primary Key");
+        }
+        
+        $sql = "update $tableName set $setStr where $whereStr";
+        
+        return $this->_pdoMysql->excute($sql, $paramArr);
     }
 
     /**
      * only for one id table
      */
-    public function batchUpdate($entityArr)
+    public function batchUpdate($entityArr, $nullIgnore = FALSE)
     {
         $parser = new DocParser($entityArr[0]);
         $table = $parser->getTable();
@@ -184,53 +235,109 @@ class MysqlORMQuery implements IORMQuery
             throw new \Exception("The entity class is not valid!");
         }
         $tableName = $table->name;
-        if(!empty($table->database))
+        if(! empty($table->database))
         {
-            $tableName = $table->database.".".$tableName;
-        }
-        $idFieldName = "";
-        $updateEntityArr = array();
-        foreach($entityArr as $entity)
-        {
-            $parser = new DocParser($entity);
-            $table = $parser->getTable();
-            $paramArr = array();
-            foreach($table->fieldArr as $field)
-            {
-                if($field->isId && empty($idFieldName))
-                {
-                    $idFieldName=$field->name;
-                }
-                $paramArr[$field->name] = $this->getFieldValue($field->value,$field->type);
-            }
-            array_push($updateEntityArr, $paramArr);
+            $tableName = $table->database . "." . $tableName;
         }
         
-        return $this->_pdoMysql->batchUpdateById($tableName, $updateEntityArr, $idFieldName);
-    }
-    
-    /**
-     * get the field value from the propert value of the entity
-     * @param unknown $originalValue
-     * @param string $type
-     * @return string|unknown
-     */
-    private function getFieldValue($originalValue,$type)
-    {
-        if($type=="datetime")
+        $idCount = 0;
+        $idPropertyName = "";
+        $idFieldName = "";
+        foreach ($table->fieldArr as $key => $field)
         {
-        	if(gettype($originalValue)=="object" && get_class($originalValue)=="DateTime")
+        	if($field->primaryKey)
         	{
-        		return $originalValue->format("Y-m-d H:i:s");
-        	}
-        	else if(gettype($originalValue)=="integer")
-        	{
-        		return date("Y-m-d H:i:s",$originalValue);
+        	    $idFieldName = $field->name;
+        	    $idPropertyName = $key;
+        		$idCount++;
         	}
         }
-    	return $originalValue;
+        if($idCount>1)
+        {
+        	throw new \Exception("This method applies only to tables that have only one primary key field");
+        }
+        
+        $idStr = "";
+        $paramArr = array();
+        $setArr = array();
+        for($i=0;$i<count($entityArr);$i++)
+        {
+            $parser = new DocParser($entityArr[$i]);
+            $table = $parser->getTable();
+            $index = 1;
+            foreach($table->fieldArr as $key => $field)
+            {
+                
+                if($field->primaryKey)
+                {
+                    $primaryKeyName = $field->name.$i."_0";
+                    $idStr.=":".$primaryKeyName.",";
+                    $paramArr[$primaryKeyName] = $this->getFieldValue($field->value, $field->type);
+                }
+                if($field->isGenerated)
+                {
+                    continue;
+                }
+                
+                if($nullIgnore && is_null($field->value))
+                {
+                	continue;
+                }
+                
+                $tempIdName = $idFieldName.$i."_".$index;
+                $paramArr[$tempIdName] = $entityArr[$i]->{$idPropertyName};
+                $index++;
+                
+                $tempFieldName = $field->name.$i;
+                if(! array_key_exists($field->name, $setArr))
+                {
+                    $setArr[$field->name] = " when :".$tempIdName." then :".$tempFieldName;
+                }
+                else 
+                {
+                    $setArr[$field->name] .= " when :".$tempIdName." then :".$tempFieldName;
+                }
+                $paramArr[$tempFieldName] = $this->getFieldValue($field->value, $field->type);
+            }
+        }
+        $idStr = trim($idStr, ',');
+        
+        $setStr = "";
+        foreach ($setArr as $key=>$value)
+        {
+        	$setStr.="$key = case $idFieldName $value else $key end,";
+        }
+        
+        $setStr = trim($setStr, ',');
+        
+        $sql = "update $tableName set $setStr where $idFieldName in($idStr)";
+        
+        return $this->_pdoMysql->excute($sql, $paramArr);
     }
-    
+
+    /**
+     * get the field value from the propert value of the entity
+     * 
+     * @param unknown $originalValue            
+     * @param string $type            
+     * @return string unknown
+     */
+    private function getFieldValue($originalValue, $type)
+    {
+        if($type == "datetime")
+        {
+            if(gettype($originalValue) == "object" && get_class($originalValue) == "DateTime")
+            {
+                return $originalValue->format("Y-m-d H:i:s");
+            }
+            else if(gettype($originalValue) == "integer")
+            {
+                return date("Y-m-d H:i:s", $originalValue);
+            }
+        }
+        return $originalValue;
+    }
+
     public function updateBy($table, $setParamArr, AbstractWhereExpression $where)
     {
         if(empty($setParamArr))
@@ -242,8 +349,8 @@ class MysqlORMQuery implements IORMQuery
             throw new \Exception("Missing the where condition!");
         }
         
-        $setSql="";
-        for($i=0;$i<count($setParamArr);$i++)
+        $setSql = "";
+        for($i = 0; $i < count($setParamArr); $i ++)
         {
             $tempSql = "";
             if(gettype($setParamArr[$i]) == "string")
@@ -252,28 +359,28 @@ class MysqlORMQuery implements IORMQuery
             }
             else
             {
-                $expression=MysqlDefine::getExpression($setParamArr[$i],$where->params);
-                $where->params=$expression["params"];
+                $expression = MysqlDefine::getExpression($setParamArr[$i], $where->params);
+                $where->params = $expression["params"];
                 $tempSql = $expression["sql"];
             }
             
-            if($i==0)
+            if($i == 0)
             {
-                $setSql=$tempSql;
+                $setSql = $tempSql;
             }
             else
             {
-                $setSql.=", ".$tempSql;
+                $setSql .= ", " . $tempSql;
             }
         }
         
         $tableName = $table->__table_name;
-        if(!empty($table->__database))
+        if(! empty($table->__database))
         {
-            $tableName = $table->__database.".".$tableName;
+            $tableName = $table->__database . "." . $tableName;
         }
-    
-        $sql = "update ". $tableName . " " .$table->__alias_table_name." set ". $setSql ." where ".$where->sql;
+        
+        $sql = "update " . $tableName . " " . $table->__alias_table_name . " set " . $setSql . " where " . $where->sql;
         
         $result = $this->_pdoMysql->excute($sql, $where->params);
         return $result;
@@ -288,23 +395,34 @@ class MysqlORMQuery implements IORMQuery
             throw new \Exception("The entity class is not valid!");
         }
         $tableName = $table->name;
-        if(!empty($table->database))
+        if(! empty($table->database))
         {
-            $tableName = $table->database.".".$tableName;
+            $tableName = $table->database . "." . $tableName;
         }
-        $idArr = array();
+        
+        $whereStr = "";
+        $paramArr = array();
         foreach($table->fieldArr as $field)
         {
             
-            if($field->isId)
+            if($field->primaryKey)
             {
-                $idArr[$field->name] = $field->value;
+                if(empty($whereStr))
+                {
+                	$whereStr = $field->name. "=:".$field->name; 
+                }
+                else 
+                {
+                    $whereStr .= " and ".$field->name. "=:".$field->name;
+                }
+                $paramArr[$field->name] = $this->getFieldValue($field->value, $field->type);
             }
         }
-        return $this->_pdoMysql->deleteById($tableName, $idArr);
+        
+        $sql = "delete from $tableName where $whereStr";
+        return $this->_pdoMysql->excute($sql, $paramArr);
     }
-    
-    
+
     public function deleteBy($table, AbstractWhereExpression $where)
     {
         if(empty($where))
@@ -313,15 +431,14 @@ class MysqlORMQuery implements IORMQuery
         }
         
         $tableName = $table->__table_name;
-        if(!empty($table->__database))
+        if(! empty($table->__database))
         {
-            $tableName = $table->__database.".".$tableName;
+            $tableName = $table->__database . "." . $tableName;
         }
         
-        $sql = "delete ".$table->__alias_table_name." from " . $tableName ." ".$table->__alias_table_name." where ".$where->sql;
+        $sql = "delete " . $table->__alias_table_name . " from " . $tableName . " " . $table->__alias_table_name . " where " . $where->sql;
         
         $result = $this->_pdoMysql->excute($sql, $where->params);
         return $result;
     }
-    
 }
