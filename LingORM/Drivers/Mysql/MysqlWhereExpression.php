@@ -33,7 +33,11 @@ class MysqlWhereExpression extends AbstractWhereExpression
             $tempSql = "";
             if(gettype($args[$i]) == "string")
             {
-                $tempSql = "(" . $args[$i] . ")";
+                $tempSql = $args[$i];
+            }
+            else if($args[$i] instanceof MysqlWhereExpression)
+            {
+                $tempSql = $args[$i]->sql;
             }
             else
             {
@@ -47,6 +51,10 @@ class MysqlWhereExpression extends AbstractWhereExpression
             }
             else
             {
+                if(strpos($tempSql," or ") || strpos($tempSql," and "))
+                {
+                	$tempSql = "(" . $tempSql . ")";
+                }
                 if($type==1)
                 {
                     $sql .= " and " . $tempSql;

@@ -115,7 +115,7 @@ class MysqlORMQuery implements IORMQuery
         return $this->_pdoMysql->insert($sql, $paramArr);
     }
 
-    public function batchInsert($entityArr)
+    public function batchInsert($entityArr, $nullIgnore=FALSE)
     {
         $parser = new DocParser($entityArr[0]);
         $table = $parser->getTable();
@@ -130,32 +130,56 @@ class MysqlORMQuery implements IORMQuery
         }
         
         $fieldStr = "";
+        $insertFieldArr = array();
         foreach ($table->fieldArr as $field)
         {
             if($field->isGenerated)
             {
                 continue;
             }
+            if($nullIgnore && is_null($field->value))
+            {
+                continue;
+            }
+            array_push($insertFieldArr, $field->name);
         	$fieldStr.=$field->name.",";
         }
         $fieldStr = trim($fieldStr,",");
         
         $valueStr = "";
         $paramArr = array();
+        $index=0;
         for($i=0;$i<count($entityArr);$i++)
         {
             $parser = new DocParser($entityArr[$i]);
             $table = $parser->getTable();
             $tempValueStr = "";
+            
             foreach ($table->fieldArr as $field)
             {
                 if($field->isGenerated)
                 {
                     continue;
                 }
-            	$tempFieldName = $field->name.$i;
-            	$tempValueStr.=":".$tempFieldName.",";
-            	$paramArr[$tempFieldName] = $this->getFieldValue($field->value, $field->type);
+                if($nullIgnore && !in_array($field->name, $insertFieldArr))
+                {
+                    continue;
+                }
+            	
+            	if(is_null($field->value))
+            	{
+            	    $tempValueStr.="default,";
+            	}
+            	else 
+            	{
+            	    $tempFieldName = "p".$index;
+            	    $tempValueStr.=":".$tempFieldName.",";
+            	    $paramArr[$tempFieldName] = $this->getFieldValue($field->value, $field->type);
+            	    $index++;
+            	}
+//             	$tempValueStr.=":".$tempFieldName.",";
+//             	$paramArr[$tempFieldName] = $this->getFieldValue($field->value, $field->type);
+            	
             }
             $tempValueStr = trim($tempValueStr,",");
             $valueStr .= "(".$tempValueStr."),";
@@ -224,7 +248,7 @@ class MysqlORMQuery implements IORMQuery
     }
 
     /**
-     * only for one id table
+     * only for one primary key table
      */
     public function batchUpdate($entityArr, $nullIgnore = FALSE)
     {
@@ -260,19 +284,21 @@ class MysqlORMQuery implements IORMQuery
         $idStr = "";
         $paramArr = array();
         $setArr = array();
+        $index = 0;
         for($i=0;$i<count($entityArr);$i++)
         {
             $parser = new DocParser($entityArr[$i]);
             $table = $parser->getTable();
-            $index = 1;
+            
+            $primaryKeyName = "i".$i;
+            $paramArr[$primaryKeyName] = $entityArr[$i]->{$idPropertyName};
+            $idStr.=":".$primaryKeyName.",";
+            
             foreach($table->fieldArr as $key => $field)
             {
-                
                 if($field->primaryKey)
                 {
-                    $primaryKeyName = $field->name.$i."_0";
-                    $idStr.=":".$primaryKeyName.",";
-                    $paramArr[$primaryKeyName] = $this->getFieldValue($field->value, $field->type);
+                    continue;
                 }
                 if($field->isGenerated)
                 {
@@ -284,11 +310,10 @@ class MysqlORMQuery implements IORMQuery
                 	continue;
                 }
                 
-                $tempIdName = $idFieldName.$i."_".$index;
+                $tempIdName = "d".$index;
                 $paramArr[$tempIdName] = $entityArr[$i]->{$idPropertyName};
-                $index++;
                 
-                $tempFieldName = $field->name.$i;
+                $tempFieldName = "p".$index;
                 if(! array_key_exists($field->name, $setArr))
                 {
                     $setArr[$field->name] = " when :".$tempIdName." then :".$tempFieldName;
@@ -298,6 +323,8 @@ class MysqlORMQuery implements IORMQuery
                     $setArr[$field->name] .= " when :".$tempIdName." then :".$tempFieldName;
                 }
                 $paramArr[$tempFieldName] = $this->getFieldValue($field->value, $field->type);
+                
+                $index++;
             }
         }
         $idStr = trim($idStr, ',');

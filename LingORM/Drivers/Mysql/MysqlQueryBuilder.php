@@ -300,6 +300,7 @@ class MysqlQueryBuilder extends AbstractQueryBuilder
         {
             $sql .= " " . $this->limitSql;
         }
+        $this->sql = $sql;
         return $sql;
     }
 
