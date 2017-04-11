@@ -24,7 +24,7 @@ class MysqlQueryBuilder extends AbstractQueryBuilder
             $this->selectSql = "*";
             return $this;
         }
-        $fieldInstance = new Field();
+        
         for($i = 0; $i < count($args); $i ++)
         {
             if(empty($args[$i]))
@@ -34,7 +34,7 @@ class MysqlQueryBuilder extends AbstractQueryBuilder
             
             $fieldStr = $args[$i];
             
-            if(get_class($args[$i]) == get_class($fieldInstance))
+            if($args[$i] instanceof Field)
             {
                 $fieldStr = $args[$i]->aliasTableName . "." . $args[$i]->fieldName;
                 if($args[$i]->isDistinct == 1)
