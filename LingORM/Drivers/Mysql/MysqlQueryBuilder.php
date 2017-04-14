@@ -195,7 +195,7 @@ class MysqlQueryBuilder extends AbstractQueryBuilder
         return $this;
     }
 
-    public function orderBy(Field $field, $order)
+    public function orderBy($field, $order)
     {
         if(empty($order))
         {
@@ -208,7 +208,13 @@ class MysqlQueryBuilder extends AbstractQueryBuilder
         }
         
         $order = MysqlDefine::$ORDERS[$order];
-        $fieldName = $field->aliasTableName . "." . $field->fieldName;
+        
+        $fieldName = $field;
+        if($field instanceof Field)
+        { 
+            $fieldName = $field->aliasTableName . "." . $field->fieldName;
+        }
+        
         if(empty($this->orderBySql))
         {
             $this->orderBySql = $fieldName . " " . $order;

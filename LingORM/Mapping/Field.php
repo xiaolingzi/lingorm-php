@@ -93,7 +93,6 @@ class Field
         $result->operator=$operatorType;
         $result->value = $value;
         
-//         if(gettype($value)=="object" && get_class($value) == get_class($this))
         if($value instanceof Field)
         {
             $result->valueType = 1;

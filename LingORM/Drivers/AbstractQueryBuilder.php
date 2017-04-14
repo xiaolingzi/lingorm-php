@@ -1,7 +1,6 @@
 <?php
 namespace LingORM\Drivers;
 
-use LingORM\Mapping\Field;
 abstract class AbstractQueryBuilder
 {
     public $sql;
@@ -21,7 +20,7 @@ abstract class AbstractQueryBuilder
 	abstract public function innerJoin($table,AbstractWhereExpression $where);
 	abstract public function where(AbstractWhereExpression $where);
 	abstract public function groupBy($colomnArgs);
-	abstract public function orderBy(Field $field,$order);
+	abstract public function orderBy($field,$order);
 	abstract public function limit($count);
 	abstract public function getResult($classObject=null);
 	abstract public function getPageResult($pageIndex, $pageSize, $classObject = null);

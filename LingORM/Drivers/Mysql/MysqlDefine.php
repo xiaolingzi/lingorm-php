@@ -34,17 +34,36 @@ class MysqlDefine
         }
         else
         {
-            $paramName = "p" . self::$index ++;
-            $params[$paramName] = $condition->value;
-            
             $fieldName = $condition->aliasTableName . "." . $condition->fieldName;
-            if($condition->operator == ConstDefine::OPERATOR_IN or $condition->operator == ConstDefine::OPERATOR_NOT_IN)
+            if(is_null($condition->value))
             {
-                $sql = $fieldName . " " . self::$OPERATORS[$condition->operator] . " (" . ":" . $paramName . ")";
+                if($condition->operator == ConstDefine::OPERATOR_EQUAL)
+                {
+                	$sql = $fieldName." is null";
+                }
+                else if($condition->operator == ConstDefine::OPERATOR_NOT_EQUAL)
+                {
+                    $sql = $fieldName." is not null";
+                }
+                else 
+                {
+                	throw new \Exception("Invalid parameter value for '$fieldName'!");
+                }
             }
-            else
+            else 
             {
-                $sql = $fieldName . " " . self::$OPERATORS[$condition->operator] . " " . ":" . $paramName;
+                $paramName = "p" . self::$index ++;
+                $params[$paramName] = $condition->value;
+                
+                if($condition->operator == ConstDefine::OPERATOR_IN or $condition->operator == ConstDefine::OPERATOR_NOT_IN)
+                {
+                    $sql = $fieldName . " " . self::$OPERATORS[$condition->operator] . " (" . ":" . $paramName . ")";
+                }
+                else
+                {
+                    $sql = $fieldName . " " . self::$OPERATORS[$condition->operator] . " " . ":" . $paramName;
+                    
+                }
             }
         }
         

@@ -14,7 +14,8 @@ use LingORM\Drivers\Mysql\MysqlQueryBuilder;
 class Query
 {
     private $_databaseInfo;
-    private $_index=0;
+    static private $_index=0;
+    static private $_tableArr=array();
     
     /**
      * @param string $key
@@ -42,6 +43,12 @@ class Query
      */
     public function createTable($entity, $aliasTableName=null)
     {
+        $className = get_class($entity);
+        if(empty($aliasTableName) && array_key_exists($className, self::$_tableArr))
+        {
+        	return self::$_tableArr[$className];
+        }
+        
         $table=(new DocParser($entity))->getTable();
         if(empty($table) || empty($table->fieldArr))
         {
@@ -75,7 +82,8 @@ class Query
         
         if(empty($aliasTableName))
         {
-        	$aliasTableName="t".$this->_index++;
+            self::$_index = self::$_index+1;
+        	$aliasTableName="t".self::$_index;
         }
         $entity->{"__alias_table_name"}=$aliasTableName;
         
@@ -92,6 +100,9 @@ class Query
             $field->aliasFieldName=null;
             $entity->{$key}=$field;
         }
+        
+        self::$_tableArr[$className] = $entity;
+        
         return $entity;
     }
     

@@ -6,13 +6,15 @@ class DocParser
 {
     private $_reflection;
     private $_classObject;
-    private $_nameMappingArr = array();
+    private $_className;
+    static private $_nameMappingArr = array();
 
     public function __construct($classObject)
     {
         $className = get_class($classObject);
         $this->_reflection = new \ReflectionClass($className);
         $this->_classObject = $classObject;
+        $this->_className = $className;
     }
 
     public function getTable()
@@ -223,17 +225,23 @@ class DocParser
         }
         $result = $this->_reflection->newInstance();
         
-        if(empty($this->_nameMappingArr))
+        $nameMappingArr = array();
+        if(array_key_exists($this->_className, self::$_nameMappingArr))
         {
-            $this->_nameMappingArr = $this->getNameMapping();
+        	$nameMappingArr=self::$_nameMappingArr[$this->_className];
+        }
+        else 
+        {
+            $nameMappingArr = $this->getNameMapping();
+            self::$_nameMappingArr[$this->_className] = $nameMappingArr;
         }
         
         foreach($arr as $key => $value)
         {
-            if(array_key_exists($key, $this->_nameMappingArr))
+            if(array_key_exists($key, $nameMappingArr))
             {
-                $propertyName = $this->_nameMappingArr[$key]["propertyName"];
-                $type = $this->_nameMappingArr[$key]["type"];
+                $propertyName = $nameMappingArr[$key]["propertyName"];
+                $type = $nameMappingArr[$key]["type"];
                 $result->{$propertyName} = FieldType::typeParse($value, $type);
             }
             else
