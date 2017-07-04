@@ -9,4 +9,6 @@ abstract class AbstractWhereExpression
 	
 	abstract public function setAnd($expressionArgs);
 	abstract public function setOr($expressionArgs);
+	abstract public function getAnd($expressionArgs);
+	abstract public function getOr($expressionArgs);
 }

@@ -7,6 +7,20 @@ use LingORM\Drivers\AbstractWhereExpression;
 class MysqlWhereExpression extends AbstractWhereExpression
 {
 
+    public function getAnd($expressionArgs)
+    {
+        $args = func_get_args();
+        $sql = $this->getExpressionSql($args, 1);
+        return $sql;
+    }
+
+    public function getOr($expressionArgs)
+    {
+        $args = func_get_args();
+        $sql = $this->getExpressionSql($args, 2);
+        return $sql;
+    }
+
     public function setAnd($expressionArgs)
     {
         $args = func_get_args();
@@ -45,21 +59,25 @@ class MysqlWhereExpression extends AbstractWhereExpression
                 $this->params = $expression["params"];
                 $tempSql = $expression["sql"];
             }
+            
+            $tempStr = preg_replace("#\\([^\\(\\)]*\\)#", "", $tempSql);
+            if((strpos($tempStr, " or ") && $type==1)
+            || (strpos($tempStr, " and ") && $type==2))
+            {
+                $tempSql = "(" . $tempSql . ")";
+            }
+            
             if($i == 0)
             {
                 $sql = $tempSql;
             }
             else
             {
-                if(strpos($tempSql," or ") || strpos($tempSql," and "))
-                {
-                	$tempSql = "(" . $tempSql . ")";
-                }
-                if($type==1)
+                if($type == 1)
                 {
                     $sql .= " and " . $tempSql;
                 }
-                else 
+                else
                 {
                     $sql .= " or " . $tempSql;
                 }
@@ -67,6 +85,4 @@ class MysqlWhereExpression extends AbstractWhereExpression
         }
         return $sql;
     }
-    
-    
 }
