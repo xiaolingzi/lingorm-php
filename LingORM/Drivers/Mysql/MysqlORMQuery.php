@@ -97,15 +97,18 @@ class MysqlORMQuery implements IORMQuery
         $fieldStr = "";
         $valueStr = "";
         $paramArr = array();
+        $index=0;
         foreach($table->fieldArr as $field)
         {
             if($field->isGenerated)
             {
                 continue;
             }
+            $tempFieldName="f".$index;
             $fieldStr .= $field->name . ",";
-            $valueStr .= ":" . $field->name . ",";
-            $paramArr[$field->name] = $this->getFieldValue($field->value, $field->type);
+            $valueStr .= ":" . $tempFieldName . ",";
+            $paramArr[$tempFieldName] = $this->getFieldValue($field->value, $field->type);
+            $index++;
         }
         $fieldStr = trim($fieldStr, ",");
         $valueStr = trim($valueStr, ",");
@@ -172,7 +175,7 @@ class MysqlORMQuery implements IORMQuery
             	}
             	else 
             	{
-            	    $tempFieldName = "p".$index;
+            	    $tempFieldName = "f".$index;
             	    $tempValueStr.=":".$tempFieldName.",";
             	    $paramArr[$tempFieldName] = $this->getFieldValue($field->value, $field->type);
             	    $index++;
@@ -208,20 +211,22 @@ class MysqlORMQuery implements IORMQuery
         $setStr = "";
         $whereStr = "";
         $paramArr = array();
+        $index=0;
         
         foreach($table->fieldArr as $field)
         {
             if($field->primaryKey)
             {
+                $tempFieldName = "p".$index;
                 if(empty($whereStr))
                 {
-                	$whereStr = $field->name. "=:".$field->name; 
+                	$whereStr = $field->name. "=:".$tempFieldName; 
                 }
                 else 
                 {
-                    $whereStr .= " and ".$field->name. "=:".$field->name;
+                    $whereStr .= " and ".$field->name. "=:".$tempFieldName;
                 }
-                $paramArr[$field->name] = $this->getFieldValue($field->value, $field->type);
+                $paramArr[$tempFieldName] = $this->getFieldValue($field->value, $field->type);
             }
             
             if($field->isGenerated)
@@ -232,8 +237,10 @@ class MysqlORMQuery implements IORMQuery
             {
                 continue;
             }
-            $setStr .= $field->name. "=:".$field->name.","; 
-            $paramArr[$field->name] = $this->getFieldValue($field->value, $field->type);
+            $tempFieldName = "f".$index;
+            $setStr .= $field->name. "=:".$tempFieldName.","; 
+            $paramArr[$tempFieldName] = $this->getFieldValue($field->value, $field->type);
+            $index++;
         }
         $setStr = trim($setStr,",");
         
@@ -290,7 +297,7 @@ class MysqlORMQuery implements IORMQuery
             $parser = new DocParser($entityArr[$i]);
             $table = $parser->getTable();
             
-            $primaryKeyName = "i".$i;
+            $primaryKeyName = "p".$i;
             $paramArr[$primaryKeyName] = $entityArr[$i]->{$idPropertyName};
             $idStr.=":".$primaryKeyName.",";
             
@@ -313,7 +320,7 @@ class MysqlORMQuery implements IORMQuery
                 $tempIdName = "d".$index;
                 $paramArr[$tempIdName] = $entityArr[$i]->{$idPropertyName};
                 
-                $tempFieldName = "p".$index;
+                $tempFieldName = "f".$index;
                 if(! array_key_exists($field->name, $setArr))
                 {
                     $setArr[$field->name] = " when :".$tempIdName." then :".$tempFieldName;
@@ -429,20 +436,23 @@ class MysqlORMQuery implements IORMQuery
         
         $whereStr = "";
         $paramArr = array();
+        $index=0;
+        
         foreach($table->fieldArr as $field)
         {
-            
             if($field->primaryKey)
             {
+                $tempFieldName = "p".$index;
                 if(empty($whereStr))
                 {
-                	$whereStr = $field->name. "=:".$field->name; 
+                	$whereStr = $field->name. "=:".$tempFieldName; 
                 }
                 else 
                 {
-                    $whereStr .= " and ".$field->name. "=:".$field->name;
+                    $whereStr .= " and ".$field->name. "=:".$tempFieldName;
                 }
-                $paramArr[$field->name] = $this->getFieldValue($field->value, $field->type);
+                $paramArr[$tempFieldName] = $this->getFieldValue($field->value, $field->type);
+                $index++;
             }
         }
         
