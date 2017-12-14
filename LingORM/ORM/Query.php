@@ -46,7 +46,9 @@ class Query
         $className = get_class($entity);
         if(empty($aliasTableName) && array_key_exists($className, self::$_tableArr))
         {
-        	return self::$_tableArr[$className];
+        	$tempObj = serialize(self::$_tableArr[$className]);
+        	$result = unserialize($tempObj);
+        	return $result;
         }
         
         $table=(new DocParser($entity))->getTable();
@@ -103,7 +105,9 @@ class Query
         
         self::$_tableArr[$className] = $entity;
         
-        return $entity;
+        $tempObj = serialize(self::$_tableArr[$className]);
+        $result = unserialize($tempObj);
+        return $result;
     }
     
     public function createQuery()
