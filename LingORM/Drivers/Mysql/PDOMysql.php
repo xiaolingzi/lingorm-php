@@ -2,6 +2,7 @@
 
 namespace LingORM\Drivers\Mysql;
 
+use LingORM\Drivers\DatabaseConfig;
 class PDOMysql
 {
     private $dbHost;
@@ -9,42 +10,67 @@ class PDOMysql
     private $dbPassword;
     private $dbDatabase;
     private $dbCharset;
+    
     private $dbConnection;
+    private $readDatabase;
+    private $writeDatabase;
 
     public function __construct($databaseInfo)
     {
-        $this->getConfig($databaseInfo);
-        $this->connect();
+        
+        if(!array_key_exists("servers", $databaseInfo))
+        {
+        	$this->readDatabase = $databaseInfo;
+        	$this->writeDatabase = $databaseInfo;
+        }
+        else 
+        {
+        	$dbConfig = new DatabaseConfig();
+        	$this->readDatabase = $dbConfig->getReadWriteDatabaseInfo($databaseInfo, "r");
+        	$this->writeDatabase = $dbConfig->getReadWriteDatabaseInfo($databaseInfo, "w");
+        }
+        
+        $this->readDatabase = $this->getConfig($this->readDatabase);
+        $this->writeDatabase = $this->getConfig($this->writeDatabase);
+        
     }
 
     private function getConfig($databaseInfo)
     {
-        $dbinfo = $databaseInfo;
-        $this->dbHost = $dbinfo["host"];
-        if(empty($this->dbHost))
+        if(empty($databaseInfo["host"]))
         {
-            $this->dbHost = "127.0.0.1";
+            $databaseInfo["host"] = "127.0.0.1";
         }
-        $this->dbUserName = $dbinfo["user"];
-        $this->dbPassword = $dbinfo["password"];
-        $this->dbDatabase = $dbinfo["database"];
-        $this->dbCharset = $dbinfo["charset"];
-        if(! $this->dbCharset)
+
+        if(empty($databaseInfo["charset"]))
         {
-            $this->dbCharset = "UTF8";
+            $databaseInfo["charset"] = "UTF8";
         }
+        
+        return $databaseInfo;
     }
 
-    private function connect()
+    private function connect($databaseInfo)
     {
-        $this->dbConnection = new \PDO('mysql:host=' . $this->dbHost . ';dbname=' . $this->dbDatabase . ';charset=' . $this->dbCharset, $this->dbUserName, $this->dbPassword);
+        $this->dbConnection = new \PDO('mysql:host=' . $databaseInfo["host"] . ';dbname=' . $databaseInfo["database"] . ';charset=' . $databaseInfo["charset"], $databaseInfo["user"], $databaseInfo["password"]);
         
         $this->dbConnection->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
         $this->dbConnection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
     }
 
     private function prepareSql($sql, $paramArr)
-    {
+    {   
+        $sql = trim($sql);
+        
+        if(substr($sql, 0, 6) == "select")
+        {
+        	$this->connect($this->readDatabase);
+        }
+        else 
+        {
+            $this->connect($this->writeDatabase);
+        }
+        
         $statement = $this->dbConnection->prepare($sql);
         $statement->execute($paramArr);
         return $statement;

@@ -164,6 +164,7 @@ class MysqlQueryBuilder extends AbstractQueryBuilder
         {
             $this->params = array_merge($this->params, $where->params);
         }
+        
         return $this;
     }
 

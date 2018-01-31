@@ -27,10 +27,13 @@ class Query
         {
         	$key = Config::DEFAULT_DATABASE_SERVER;
         }
-        $this->_databaseInfo=(new DatabaseConfig())->getDatabaseInfoByKey($key);
-        if(empty($this->_databaseInfo))
+        if(!empty($key))
         {
-        	throw new \Exception("Please specify which database to use!");
+            $this->_databaseInfo=(new DatabaseConfig())->getDatabaseInfoByKey($key);
+            if(empty($this->_databaseInfo))
+            {
+            	throw new \Exception("Please specify which database to use!");
+            }
         }
     }
     
@@ -46,7 +49,7 @@ class Query
         $className = get_class($entity);
         if(empty($aliasTableName) && array_key_exists($className, self::$_tableArr))
         {
-        	$tempObj = serialize(self::$_tableArr[$className]);
+            $tempObj = serialize(self::$_tableArr[$className]);
         	$result = unserialize($tempObj);
         	return $result;
         }

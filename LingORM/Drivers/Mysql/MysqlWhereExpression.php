@@ -61,8 +61,8 @@ class MysqlWhereExpression extends AbstractWhereExpression
             }
             
             $tempStr = preg_replace("#\\([^\\(\\)]*\\)#", "", $tempSql);
-            if((strpos($tempStr, " or ") && $type==1)
-            || (strpos($tempStr, " and ") && $type==2))
+            if((strpos($tempStr, " or ")!==false && $type==1)
+            || (strpos($tempStr, " and ")!==false && $type==2))
             {
                 $tempSql = "(" . $tempSql . ")";
             }
