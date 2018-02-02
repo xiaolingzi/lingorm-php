@@ -62,7 +62,7 @@ class PDOMysql
     {   
         $sql = trim($sql);
         
-        if(substr($sql, 0, 6) == "select")
+        if(strtolower(substr($sql, 0, 6)) == "select")
         {
         	$this->connect($this->readDatabase);
         }
