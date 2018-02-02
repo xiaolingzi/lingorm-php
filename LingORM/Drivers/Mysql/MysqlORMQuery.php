@@ -34,6 +34,7 @@ class MysqlORMQuery implements IORMQuery
         {
             $sql .= " order by " . $order->sql;
         }
+        $sql .= " limit 1";
         
         $tempResult = $this->_pdoMysql->fetchOne($sql, $where->params);
         $parser = new DocParser($table);
