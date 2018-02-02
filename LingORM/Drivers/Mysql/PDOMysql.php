@@ -5,19 +5,12 @@ namespace LingORM\Drivers\Mysql;
 use LingORM\Drivers\DatabaseConfig;
 class PDOMysql
 {
-    private $dbHost;
-    private $dbUserName;
-    private $dbPassword;
-    private $dbDatabase;
-    private $dbCharset;
-    
     private $dbConnection;
     private $readDatabase;
     private $writeDatabase;
 
     public function __construct($databaseInfo)
     {
-        
         if(!array_key_exists("servers", $databaseInfo))
         {
         	$this->readDatabase = $databaseInfo;
