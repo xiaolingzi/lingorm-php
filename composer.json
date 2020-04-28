@@ -5,7 +5,7 @@
     "require": {
         "php": ">=5.6"
     },
-    "license": "GNU",
+    "license": "MIT",
     "authors": [
         {
             "name": "xiaolingzi",
