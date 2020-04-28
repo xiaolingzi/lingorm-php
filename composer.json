@@ -1,0 +1,21 @@
+{
+    "name": "xiaolingzi/lingorm",
+    "description": "orm for php",
+    "type": "library",
+    "require": {
+        "php": ">=5.6"
+    },
+    "license": "GNU",
+    "authors": [
+        {
+            "name": "xiaolingzi",
+            "email": "xlne@foxmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "LingORM\\": ""
+        }
+    }
+}
