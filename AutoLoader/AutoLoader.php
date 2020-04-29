@@ -3,10 +3,10 @@ class AutoLoader
 {
 	public static function classLoader($className)
 	{
-	    $dir=dirname(dirname(__DIR__));
+	    $dir=dirname(__DIR__);
 	    $classNameArr=explode("\\", $className);
 	    $count=count($classNameArr);
-	    for($i=0;$i<$count;$i++)
+	    for($i=1;$i<$count;$i++)
 	    {
 	    	$dir.="/".$classNameArr[$i];
 	    	

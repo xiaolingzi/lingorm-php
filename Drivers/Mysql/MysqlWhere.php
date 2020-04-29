@@ -21,13 +21,13 @@ class MysqlWhere extends AbstractWhere
     }
 
     function  and (...$args) {
-        array_push($args, $this);
+        array_unshift($args, $this);
         $this->sql = $this->getExpressionSql($args, 1);
         return $this;
     }
 
     function  or (...$args) {
-        array_push($args, $this);
+        array_unshift($args, $this);
         $this->sql = $this->getExpressionSql($args, 2);
         return $this;
     }
@@ -37,6 +37,7 @@ class MysqlWhere extends AbstractWhere
         if (empty($args)) {
             return "";
         }
+
         $sql = "";
         for ($i = 0; $i < count($args); $i++) {
             $tempSql = "";
@@ -56,12 +57,13 @@ class MysqlWhere extends AbstractWhere
             }
 
             $tempStr = preg_replace("#\\([^\\(\\)]*\\)#", "", $tempSql);
-            if ((strpos($tempStr, " or ") !== false && $type == 1)
-                || (strpos($tempStr, " and ") !== false && $type == 2)) {
+            $tempStr = strtoupper($tempStr);
+            if ((strpos($tempStr, " OR ") !== false && $type == 1)
+                || (strpos($tempStr, " AND ") !== false && $type == 2)) {
                 $tempSql = "(" . $tempSql . ")";
             }
 
-            if ($i == 0) {
+            if (empty($sql)) {
                 $sql = $tempSql;
             } else {
                 if ($type == 1) {
