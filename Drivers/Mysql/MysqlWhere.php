@@ -32,6 +32,16 @@ class MysqlWhere extends AbstractWhere
         return $this;
     }
 
+    function  andOr (...$args) {
+        $sql = $this->getExpressionSql($args, 2);
+        return $this->and($sql);
+    }
+
+    function  orAnd (...$args) {
+        $sql = $this->getExpressionSql($args, 1);
+        return $this->or($sql);
+    }
+
     private function getExpressionSql($args, $type)
     {
         if (empty($args)) {
@@ -45,7 +55,7 @@ class MysqlWhere extends AbstractWhere
                 $tempSql = $args[$i];
             } else if ($args[$i] instanceof MysqlWhere) {
                 $tempSql = $args[$i]->sql;
-                $this->params = $args[$i]->params;
+                $this->params =  array_merge($this->params, $args[$i]->params);
             } else {
                 $expression = MysqlExpression::getExpression($args[$i], $this->params);
                 $this->params = $expression["params"];

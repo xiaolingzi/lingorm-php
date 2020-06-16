@@ -11,4 +11,6 @@ abstract class AbstractWhere
     abstract public function or(...$args);
     abstract public function getAnd(...$args);
     abstract public function getOr(...$args);
+    abstract public function andOr(...$args);
+    abstract public function orAnd(...$args);
 }
