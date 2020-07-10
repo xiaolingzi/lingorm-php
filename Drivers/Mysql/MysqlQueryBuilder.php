@@ -8,9 +8,9 @@ class MysqlQueryBuilder extends AbstractQueryBuilder
 {
     private $_native;
 
-    public function __construct($databaseInfo)
+    public function __construct($databaseInfo, $transactionKey)
     {
-        $this->_native = new MysqlNativeQuery($databaseInfo);
+        $this->_native = new MysqlNativeQuery($databaseInfo, $transactionKey);
     }
 
     public function select(...$args)
@@ -139,8 +139,13 @@ class MysqlQueryBuilder extends AbstractQueryBuilder
     public function orderBy(...$args)
     {
         $order = new MysqlOrderBy();
-        $order->orderBy(...$args);
-        $this->orderBySQL = $order->sql;
+        $order->by(...$args);
+        if (empty($this->orderBySQL)){
+            $this->orderBySQL = $order->sql;
+        }else{
+            $this->orderBySQL .= "," . $order->sql;
+        }
+        
         return $this;
     }
 

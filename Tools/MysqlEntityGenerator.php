@@ -90,7 +90,7 @@ function generateEntity($db, $tb, $dir)
                 $columnProperty .= ', length="' . $column["CHARACTER_MAXIMUM_LENGTH"] . '"';
             }
             if ($column["COLUMN_KEY"] == "PRI") {
-                $columnProperty .= ', primaryKey=1';
+                $columnProperty .= ', isPrimary=1';
             }
             if ($column["EXTRA"] == "auto_increment") {
                 $columnProperty .= ', isGenerated=1';

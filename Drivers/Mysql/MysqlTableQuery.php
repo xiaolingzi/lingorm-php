@@ -7,14 +7,16 @@ use LingORM\Drivers\AbstractTableQuery;
 class MysqlTableQuery extends AbstractTableQuery
 {
     private $_native;
-    public function __construct($databaseInfo)
+    private $_table;
+    public function __construct($databaseInfo, $transactionKey)
     {
         $this->_databaseInfo = $databaseInfo;
-        $this->_native = new MysqlNativeQuery($databaseInfo);
+        $this->_native = new MysqlNativeQuery($databaseInfo, $transactionKey);
     }
 
     public function table($table)
     {
+        $this->_table = $table;
         $sql = $table->__table_name . " " . $table->__alias_table_name;
         if (!empty($table->__database)) {
             $sql = $table->__database . "." . $sql;
@@ -67,8 +69,13 @@ class MysqlTableQuery extends AbstractTableQuery
     public function orderBy(...$args)
     {
         $order = new MysqlOrderBy();
-        $order->orderBy(...$args);
-        $this->orderBySQL = $order->sql;
+        $order->by(...$args);
+        if (empty($this->orderBySQL)){
+            $this->orderBySQL = $order->sql;
+        }else{
+            $this->orderBySQL .= "," . $order->sql;
+        }
+        
         return $this;
     }
 
@@ -81,24 +88,24 @@ class MysqlTableQuery extends AbstractTableQuery
         return $this;
     }
 
-    public function first($classObject = null)
+    public function first()
     {
         $sql = $this->getSQL();
-        $result = $this->_native->first($sql, $this->params, $classObject);
+        $result = $this->_native->first($sql, $this->params, $this->_table);
         return $result;
     }
 
-    public function find($classObject = null)
+    public function find()
     {
         $sql = $this->getSQL();
-        $result = $this->_native->find($sql, $this->params, $classObject);
+        $result = $this->_native->find($sql, $this->params, $this->_table);
         return $result;
     }
 
-    public function findPage($pageIndex, $pageSize, $classObject = null)
+    public function findPage($pageIndex, $pageSize)
     {
         $sql = $this->getSQL();
-        $result = $this->_native->find($sql, $this->params, $classObject);
+        $result = $this->_native->findPage($sql, $this->params, $pageIndex, $pageSize, $this->_table);
         return $result;
     }
 
@@ -133,7 +140,6 @@ class MysqlTableQuery extends AbstractTableQuery
             $sql .= " " . $this->limitSQL;
         }
         $this->sql = $sql;
-        var_dump($sql);
         return $sql;
     }
 }

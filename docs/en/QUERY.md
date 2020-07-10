@@ -69,7 +69,7 @@ $wh->or(
     $testTable->id->lt(2), $testTable->id->gt(3)
 );
 $order = $db->createOrderBy()
-    ->orderBy($testTable->id->desc(), $testTable->testName);
+    ->by($testTable->id->desc(), $testTable->testName);
 
 $result = $db->find($testTable, $wh, $order);
 ```

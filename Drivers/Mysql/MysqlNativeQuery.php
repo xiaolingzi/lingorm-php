@@ -8,12 +8,10 @@ use LingORM\Mapping\DocParser;
 class MysqlNativeQuery implements INativeQuery
 {
     private $_pdoMysql;
-    private $_transactionKey;
 
     public function __construct($databaseInfo, $transactionKey = "")
     {
-        $this->_transactionKey = $transactionKey;
-        $this->_pdoMysql = new PDOMysql($databaseInfo, $this->_transactionKey);
+        $this->_pdoMysql = new PDOMysql($databaseInfo, $transactionKey);
     }
 
     public function excute($sql, $paramArr)
@@ -77,6 +75,7 @@ class MysqlNativeQuery implements INativeQuery
     private function getData($sql, $paramArr, $classObject = null)
     {
         $tempResult = $this->_pdoMysql->fetchAll($sql, $paramArr);
+        
         if (empty($classObject)) {
             return $tempResult;
         }
@@ -88,6 +87,7 @@ class MysqlNativeQuery implements INativeQuery
                 array_push($result, $entity);
             }
         }
+        
         return $result;
     }
 }

@@ -20,7 +20,7 @@ class MysqlQuery extends AbstractQuery
 
     public function table($table)
     {
-        return (new MysqlTableQuery($this->_databaseInfo))->table($table);
+        return (new MysqlTableQuery($this->_databaseInfo, $this->_transactionKey))->table($table);
     }
 
     public function first($table, AbstractWhere $where, AbstractOrderBy $order = null)
@@ -64,22 +64,13 @@ class MysqlQuery extends AbstractQuery
 
     public function findCount($table, AbstractWhere $where)
     {
-        if (empty($where)) {
-            throw new \Exception("Missing the where condition!");
-        }
-
-        $tableName = $table->__table_name;
-        if (!empty($table->__database)) {
-            $tableName = $table->__database . "." . $tableName;
-        }
-
-        $sql = "select * from " . $tableName . " " . $table->__alias_table_name . " where " . $where->sql;
+        $sql = $this->getSQL($table, $where);
 
         $result = $this->_native->findCount($sql, $where->params);
         return $result;
     }
 
-    private function getSQL($table, $where, $order)
+    private function getSQL($table, $where, $order = null)
     {
         if (empty($where)) {
             throw new \Exception("Missing the where condition!");
@@ -174,7 +165,7 @@ class MysqlQuery extends AbstractQuery
                 }
 
                 if (is_null($field->value)) {
-                    $tempValueStr .= "default,";
+                    $tempValueStr .= "DEFAULT,";
                 } else {
                     $tempFieldName = "f" . $index;
                     $tempValueStr .= ":" . $tempFieldName . ",";
@@ -211,7 +202,7 @@ class MysqlQuery extends AbstractQuery
         $index = 0;
 
         foreach ($table->fieldArr as $field) {
-            if ($field->primaryKey) {
+            if ($field->isPrimary) {
                 $tempFieldName = "p" . $index;
                 if (empty($whereStr)) {
                     $whereStr = $field->name . "=:" . $tempFieldName;
@@ -258,17 +249,19 @@ class MysqlQuery extends AbstractQuery
             $tableName = $table->database . "." . $tableName;
         }
 
-        $idCount = 0;
-        $idPropertyName = "";
-        $idFieldName = "";
+        $primaryCount = 0;
+        $primaryPropertyName = "";
+        $primaryColumnName = "";
+        $primaryColumnType = "";
         foreach ($table->fieldArr as $key => $field) {
-            if ($field->primaryKey) {
-                $idFieldName = $field->name;
-                $idPropertyName = $key;
-                $idCount++;
+            if ($field->isPrimary) {
+                $primaryColumnName = $field->name;
+                $primaryPropertyName = $key;
+                $primaryColumnType = $field->type;
+                $primaryCount++;
             }
         }
-        if ($idCount > 1) {
+        if ($primaryCount > 1) {
             throw new \Exception("This method applies only to tables that have only one primary key field");
         }
 
@@ -281,11 +274,11 @@ class MysqlQuery extends AbstractQuery
             $table = $parser->getTable();
 
             $primaryKeyName = "p" . $i;
-            $paramArr[$primaryKeyName] = $entityArr[$i]->{$idPropertyName};
+            $paramArr[$primaryKeyName] = $this->getFieldValue($entityArr[$i]->{$primaryPropertyName}, $primaryColumnType);
             $idStr .= ":" . $primaryKeyName . ",";
 
             foreach ($table->fieldArr as $key => $field) {
-                if ($field->primaryKey) {
+                if ($field->isPrimary) {
                     continue;
                 }
                 if ($field->isGenerated) {
@@ -296,14 +289,11 @@ class MysqlQuery extends AbstractQuery
                     continue;
                 }
 
-                $tempIdName = "d" . $index;
-                $paramArr[$tempIdName] = $entityArr[$i]->{$idPropertyName};
-
                 $tempFieldName = "f" . $index;
                 if (!array_key_exists($field->name, $setArr)) {
-                    $setArr[$field->name] = " WHEN :" . $tempIdName . " THEN :" . $tempFieldName;
+                    $setArr[$field->name] = " WHEN :" . $primaryKeyName . " THEN :" . $tempFieldName;
                 } else {
-                    $setArr[$field->name] .= " WHEN :" . $tempIdName . " THEN :" . $tempFieldName;
+                    $setArr[$field->name] .= " WHEN :" . $primaryKeyName . " THEN :" . $tempFieldName;
                 }
                 $paramArr[$tempFieldName] = $this->getFieldValue($field->value, $field->type);
 
@@ -314,12 +304,12 @@ class MysqlQuery extends AbstractQuery
 
         $setStr = "";
         foreach ($setArr as $key => $value) {
-            $setStr .= "$key = CASE $idFieldName $value ELSE $key END,";
+            $setStr .= "$key = CASE $primaryColumnName $value ELSE $key END,";
         }
 
         $setStr = trim($setStr, ',');
 
-        $sql = "UPDATE $tableName SET $setStr WHERE $idFieldName IN($idStr)";
+        $sql = "UPDATE $tableName SET $setStr WHERE $primaryColumnName IN($idStr)";
 
         return $this->_native->excute($sql, $paramArr);
     }
@@ -398,7 +388,7 @@ class MysqlQuery extends AbstractQuery
         $index = 0;
 
         foreach ($table->fieldArr as $field) {
-            if ($field->primaryKey) {
+            if ($field->isPrimary) {
                 $tempFieldName = "p" . $index;
                 if (empty($whereStr)) {
                     $whereStr = $field->name . "=:" . $tempFieldName;
@@ -433,11 +423,11 @@ class MysqlQuery extends AbstractQuery
 
     public function createQueryBuilder()
     {
-        return new MysqlQueryBuilder($this->_databaseInfo);
+        return new MysqlQueryBuilder($this->_databaseInfo, $this->_transactionKey);
     }
     public function createNative()
     {
-        return new MysqlNativeQuery($this->_databaseInfo);
+        return new MysqlNativeQuery($this->_databaseInfo, $this->_transactionKey);
     }
     public function createWhere()
     {

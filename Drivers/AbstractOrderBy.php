@@ -7,5 +7,5 @@ abstract class AbstractOrderBy
 {
     public $sql;
 
-    abstract public function orderBy(...$args);
+    abstract public function by(...$args);
 }

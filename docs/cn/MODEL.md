@@ -12,7 +12,7 @@ namespace LingORM\Test\Entity;
 class TestEntity
 {
     /**
-     * @Column (type="int",isGenerated=1,primaryKey=1)
+     * @Column (type="int",isGenerated=1,isPrimary=1)
      */
     public $id;
 
@@ -38,7 +38,7 @@ class TestEntity
 (1) name 表示该属性对应的表字段。可选，如没有该参数则默认以该属性名作为字段名。
 (2) type 字段类型。可选，默认为string。参数值主要有int,string,float,double,datetime。
 (3) isGenerated 字段值是否数据库自动生成。可选，默认为0。如果该值设置为1在插入的时候就不会使用该字段。
-(4) primaryKey 是否主键。可选，默认为0.对实体进行删除更新时会使用这些字段作为条件。
+(4) isPrimary 是否主键。可选，默认为0.对实体进行删除更新时会使用这些字段作为条件。
 (5) length 字段长度。可选，改参数只对string字段使用。
 
 ## 实体类的生成

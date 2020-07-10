@@ -18,9 +18,9 @@ abstract class AbstractTableQuery
     abstract public function orderBy(...$args);
     abstract public function limit($count);
 
-    abstract public function first($classObject = null);
-    abstract public function find($classObject = null);
-    abstract public function findPage($pageIndex, $pageSize, $classObject = null);
+    abstract public function first();
+    abstract public function find();
+    abstract public function findPage($pageIndex, $pageSize);
     abstract public function findCount();
 
 }

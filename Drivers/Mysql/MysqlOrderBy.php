@@ -10,18 +10,24 @@ class MysqlOrderBy extends AbstractOrderBy
     const ORDER_ASC = "ASC";
     const ORDER_DESC = "DESC";
 
-    public function orderBy(...$args)
+    public function by(...$args)
     {
         $order = "";
         foreach ($args as $arg) {
             if ($arg instanceof Field) {
-                $this->sql .= "," . $arg->aliasTableName . "." . $arg->fieldName . " " . $this->_orderArr[$arg->orderBy];
+                $order .= "," . $arg->aliasTableName . "." . $arg->fieldName . " " . $this->_orderArr[$arg->orderBy];
 
             } else if (gettype($arg) == "string") {
                 $order .= "," . $arg;
             }
         }
-        $this->sql = trim($this->sql, ",");
+        $order = trim($order, ",");
+        if (empty($this->sql)){
+            $this->sql = $order;
+        }else{
+            $this->sql .= "," . $order;
+        }
+        
         return $this;
     }
 

@@ -74,9 +74,9 @@ class DatabaseConfig
 
             if (array_key_exists("mode", $databaseInfo)) {
                 $configMode = strtolower($databaseInfo["mode"]);
-                if (strpos($configMode, $mode) !== false) {
+                if(empty($configMode) && $mode == self::MODE_READ){
                     array_push($targetDatabaseArr, $databaseInfo);
-                } else if ($mode == self::MODE_READ) {
+                }else if (strpos($configMode, $mode) !== false) {
                     array_push($targetDatabaseArr, $databaseInfo);
                 }
             } else if ($mode == self::MODE_READ) {

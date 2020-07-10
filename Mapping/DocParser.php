@@ -90,11 +90,15 @@ class DocParser
                 if (array_key_exists("length", $paramArr)) {
                     $column->length = $paramArr["length"];
                 }
-                if (array_key_exists("isGenerated", $paramArr)) {
-                    $column->isGenerated = $paramArr["isGenerated"];
+                if (array_key_exists("isGenerated", $paramArr) && $paramArr["isGenerated"]) {
+                    $column->isGenerated = true;
+                } else {
+                    $column->isGenerated = false;
                 }
-                if (array_key_exists("primaryKey", $paramArr)) {
-                    $column->primaryKey = $paramArr["primaryKey"];
+                if (array_key_exists("isPrimary", $paramArr) && $paramArr["isPrimary"]) {
+                    $column->isPrimary = true;
+                } else {
+                    $column->isPrimary = false;
                 }
             }
 
