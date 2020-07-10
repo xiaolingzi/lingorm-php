@@ -1,0 +1,8 @@
+<phpunit bootstrap="../AutoLoader/AutoLoader.php">
+  <testsuites>
+    <testsuite name="lingorm">
+      <directory>../Test</directory>
+      <exclude>vendor</exclude>
+    </testsuite>
+  </testsuites>
+</phpunit>

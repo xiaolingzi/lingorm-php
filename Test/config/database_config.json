@@ -1,0 +1,11 @@
+{
+    "test": {
+        "host": "47.112.123.236",
+        "user": "lirun",
+        "port": "3306",
+        "password": "Dbtest_lr",
+        "database": "test",
+        "charset": "utf8mb4",
+        "driver": "mysql"
+    }
+}
