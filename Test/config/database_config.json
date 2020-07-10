@@ -1,9 +1,9 @@
 {
     "test": {
-        "host": "47.112.123.236",
-        "user": "lirun",
+        "host": "127.0.01",
+        "user": "myuser",
         "port": "3306",
-        "password": "Dbtest_lr",
+        "password": "Db123_test",
         "database": "test",
         "charset": "utf8mb4",
         "driver": "mysql"
