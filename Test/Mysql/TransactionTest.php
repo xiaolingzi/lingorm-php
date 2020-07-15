@@ -14,7 +14,7 @@ class TransactionTest extends TestCase
         $db->begin();
 
         $entity = new FirstTableEntity();
-        $entity->firstName = "my name";
+        $entity->firstName = "my commit name";
         $entity->firstNumber = 1001;
         $entity->firstTime = "2016-09-01";
 
@@ -24,6 +24,7 @@ class TransactionTest extends TestCase
         $db->commit();
 
         $db2 = (new Base())->db();
+        $db2->begin();
         $table = $db2->createTable(new FirstTableEntity());
         $entity = $db2->table($table)->where($table->id->eq($id))->first();
         $this->assertNotNull($entity);
@@ -31,6 +32,7 @@ class TransactionTest extends TestCase
         $entity->id = $id;
         $affectedRows = $db2->delete($entity);
         $this->assertEquals(1, $affectedRows);
+        $db2->commit();
     }
 
     public function testRollback()
@@ -39,7 +41,7 @@ class TransactionTest extends TestCase
         $db->begin();
 
         $entity = new FirstTableEntity();
-        $entity->firstName = "my name";
+        $entity->firstName = "my rollback name";
         $entity->firstNumber = 1001;
         $entity->firstTime = "2016-09-01";
 

@@ -3,4 +3,5 @@
 .project
 vendor
 composer.lock
+database.json
 

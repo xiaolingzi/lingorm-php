@@ -9,7 +9,7 @@ require_once "Base.php";
 class QueryTest extends TestCase
 {
     private static $db;
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         self::$db = (new Base())->db();
         self::$db->begin();
@@ -25,7 +25,7 @@ class QueryTest extends TestCase
         self::$db->batchInsert($entityArr);
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         self::$db->rollback();
         self::$db = null;

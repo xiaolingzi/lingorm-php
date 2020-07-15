@@ -9,28 +9,17 @@ require_once "Base.php";
 class CudTest extends TestCase
 {
     private static $db;
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         self::$db = (new Base())->db();
         self::$db->begin();
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         self::$db->rollback();
         self::$db = null;
     }
-
-    // public function setUp()
-    // {
-    //     $this->db = $this->db();
-    //     $this->db->begin();
-    // }
-
-    // public function tearDown()
-    // {
-    //     $this->db->rollback();
-    // }
 
     public function testInsert()
     {
@@ -100,7 +89,7 @@ class CudTest extends TestCase
             $table->firstName->like("batch update%")
         );
         $paramArr = array(
-            $table->firstName->eq("update by")
+            $table->firstName->eq("update by"),
         );
         $affectedRows = self::$db->updateBy($table, $paramArr, $where);
         $this->assertEquals(2, $affectedRows);

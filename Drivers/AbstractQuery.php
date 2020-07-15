@@ -25,8 +25,8 @@ abstract class AbstractQuery
     abstract public function delete($entity);
     abstract public function deleteBy($table, AbstractWhere $where);
 
-    abstract public function createQueryBuilder();
-    abstract public function createNative();
+    abstract public function queryBuilder();
+    abstract public function nativeQuery();
     abstract public function createWhere();
     abstract public function createOrderBy();
 

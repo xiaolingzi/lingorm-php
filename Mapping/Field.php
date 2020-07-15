@@ -15,6 +15,15 @@ class Field
     public $isDistinct = 0;
     public $orderBy = 0;
 
+    public function i()
+    {
+        $result = new Field();
+        $result->tableName = $this->tableName;
+        $result->aliasTableName = $this->aliasTableName;
+        $result->fieldName = $this->fieldName;
+        return $result;
+    }
+
     public function alias($aliasName)
     {
         $this->aliasFieldName = $aliasName;
@@ -45,9 +54,11 @@ class Field
         return $this;
     }
 
-    public function f($func)
+    public function f(...$funcs)
     {
-        array_push($this->columnFuncs, $func);
+        foreach ($funcs as $func) {
+            array_push($this->columnFuncs, $func);
+        }
         return $this;
     }
 

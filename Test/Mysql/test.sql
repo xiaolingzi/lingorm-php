@@ -14,6 +14,6 @@ CREATE TABLE `second_table` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `second_name` varchar(45) DEFAULT NULL,
   `second_number` int(11) DEFAULT NULL,
-  `second_time` varchar(45) DEFAULT NULL,
+  `second_time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

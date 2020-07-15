@@ -421,11 +421,11 @@ class MysqlQuery extends AbstractQuery
         return $result;
     }
 
-    public function createQueryBuilder()
+    public function queryBuilder()
     {
         return new MysqlQueryBuilder($this->_databaseInfo, $this->_transactionKey);
     }
-    public function createNative()
+    public function nativeQuery()
     {
         return new MysqlNativeQuery($this->_databaseInfo, $this->_transactionKey);
     }

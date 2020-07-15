@@ -10,7 +10,7 @@ require_once "Base.php";
 class QueryBuilderTest extends TestCase
 {
     private static $db;
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         self::$db = (new Base())->db();
         self::$db->begin();
@@ -36,7 +36,7 @@ class QueryBuilderTest extends TestCase
 
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         self::$db->rollback();
         self::$db = null;
@@ -45,7 +45,7 @@ class QueryBuilderTest extends TestCase
     public function testFirst()
     {
         $table = self::$db->createTable(new FirstTableEntity());
-        $builder = self::$db->createQueryBuilder();
+        $builder = self::$db->queryBuilder();
         $entity = $builder->from($table)
             ->select($table->firstName, $table->firstNumber)
             ->where($table->firstName->like("first query%"))
@@ -61,12 +61,13 @@ class QueryBuilderTest extends TestCase
         $where = self::$db->createWhere();
         $where->and($table->firstName->like("first query 1"), $table->firstNumber->ge(2001), $table->firstNumber->le(2002));
         $where->orAnd($table->firstName->like("first query 2"), $table->firstNumber->ge(2001), $table->firstNumber->le(2002));
-        $builder = self::$db->createQueryBuilder();
+        $builder = self::$db->queryBuilder();
         $builder = $builder->from($table)
-            ->select($table->firstName, $table->firstNumber, $secTable->secondName)
+            ->select($table->firstNumber, $table->firstName->i()->max()->alias("first_name"), $secTable->secondName->i()->f("MAX")->alias("second_name"))
             ->leftJoin($secTable, $table->firstNumber->eq($secTable->secondNumber))
+            ->groupBy($table->firstNumber)
             ->where($where)
-            ->orderBy($table->id->desc())
+            ->orderBy($table->firstNumber->desc())
             ->limit(2);
         $list = $builder->find();
         $this->assertNotNull($list);
@@ -84,7 +85,7 @@ class QueryBuilderTest extends TestCase
         $where = self::$db->createWhere();
         $where->and($table->firstName->like("first query 1"), $table->firstNumber->ge(2001), $table->firstNumber->le(2002));
         $where->orAnd($table->firstName->like("first query 2"), $table->firstNumber->ge(2001), $table->firstNumber->le(2002));
-        $builder = self::$db->createQueryBuilder();
+        $builder = self::$db->queryBuilder();
         $builder = $builder->from($table)
             ->select($table->firstName, $table->firstNumber, $secTable->secondName)
             ->innerJoin($secTable, $table->firstNumber->eq($secTable->secondNumber))
@@ -96,7 +97,7 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals(2, $result["totalPages"]);
         $this->assertEquals("second query 2", $result["data"][0]["second_name"]);
 
-        $result = $builder->findPage(1,1,new Result());
+        $result = $builder->findPage(1, 1, new Result());
         $this->assertEquals("second query 2", $result["data"][0]->secondName);
     }
 
@@ -107,7 +108,7 @@ class QueryBuilderTest extends TestCase
         $where = self::$db->createWhere();
         $where->and($table->firstName->like("first query 1"), $table->firstNumber->ge(2001), $table->firstNumber->le(2002));
         $where->orAnd($table->firstName->like("first query 2"), $table->firstNumber->ge(2001), $table->firstNumber->le(2002));
-        $builder = self::$db->createQueryBuilder();
+        $builder = self::$db->queryBuilder();
         $builder = $builder->from($table)
             ->select($table->firstName, $table->firstNumber, $secTable->secondName)
             ->rightJoin($secTable, $table->firstNumber->eq($secTable->secondNumber))
