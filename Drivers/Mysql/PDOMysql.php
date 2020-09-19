@@ -2,8 +2,6 @@
 
 namespace LingORM\Drivers\Mysql;
 
-use LingORM\Drivers\DatabaseConfig;
-
 class PDOMysql
 {
     private $dbConnection;
@@ -36,7 +34,7 @@ class PDOMysql
 
     private function connect($mode)
     {
-        $dbConfig = new DatabaseConfig();
+        $dbConfig = new MysqlConfig();
         $databaseInfo = $dbConfig->getReadWriteDatabaseInfo($this->databaseInfo, $mode);
         $this->dbConnection = new \PDO('mysql:host=' . $databaseInfo["host"] . ';port=' . $databaseInfo["port"] . ';dbname=' . $databaseInfo["database"] . ';charset=' . $databaseInfo["charset"], $databaseInfo["user"], $databaseInfo["password"]);
 
@@ -54,9 +52,9 @@ class PDOMysql
         } else {
             if (empty($mode)) {
                 if (strtolower(substr($sql, 0, 6)) == "select") {
-                    $mode = DatabaseConfig::MODE_READ;
+                    $mode = MysqlConfig::MODE_READ;
                 } else {
-                    $mode = DatabaseConfig::MODE_WRITE;
+                    $mode = MysqlConfig::MODE_WRITE;
                 }
             }
             $this->connect($mode);
@@ -77,7 +75,7 @@ class PDOMysql
 
     public function fetchOne($sql, $paramArr)
     {
-        $statement = $this->prepareSql($sql, $paramArr, DatabaseConfig::MODE_READ);
+        $statement = $this->prepareSql($sql, $paramArr, MysqlConfig::MODE_READ);
         $result = $statement->fetch(\PDO::FETCH_ASSOC);
         $statement->closeCursor();
         return $result;
@@ -85,7 +83,7 @@ class PDOMysql
 
     public function fetchAll($sql, $paramArr)
     {
-        $statement = $this->prepareSql($sql, $paramArr, DatabaseConfig::MODE_READ);
+        $statement = $this->prepareSql($sql, $paramArr, MysqlConfig::MODE_READ);
         $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
         $statement->closeCursor();
         return $result;
@@ -93,7 +91,7 @@ class PDOMysql
 
     public function insert($sql, $paramArr)
     {
-        $statement = $this->prepareSql($sql, $paramArr, DatabaseConfig::MODE_WRITE);
+        $statement = $this->prepareSql($sql, $paramArr, MysqlConfig::MODE_WRITE);
         $result = $this->getLastInsertId();
         $statement->closeCursor();
         return $result;
@@ -111,7 +109,7 @@ class PDOMysql
     public function begin()
     {
         $key = microtime();
-        $connection = $this->connect(DatabaseConfig::MODE_WRITE);
+        $connection = $this->connect(MysqlConfig::MODE_WRITE);
         self::$_transactionConnectors[$key] = $connection;
         self::$_transactionConnectors[$key]->beginTransaction();
         return $key;
