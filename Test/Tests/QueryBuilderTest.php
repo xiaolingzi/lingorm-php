@@ -111,8 +111,12 @@ class QueryBuilderTest extends TestCase
         $builder = self::$db->queryBuilder();
         $builder = $builder->from($table)
             ->select($table->firstName, $table->firstNumber, $secTable->secondName)
-            ->rightJoin($secTable, $table->firstNumber->eq($secTable->secondNumber))
-            ->where($where)
+            ->rightJoin($secTable, $table->firstNumber->eq($secTable->secondNumber));
+        if (!$builder) {
+            $this->assertFalse($builder);
+            return;
+        }
+        $builder = $builder->where($where)
             ->orderBy($table->id->desc());
         $result = $builder->findCount();
         $this->assertEquals(2, $result);

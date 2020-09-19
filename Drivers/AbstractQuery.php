@@ -60,7 +60,7 @@ abstract class AbstractQuery
         }
 
         if (empty($table->database)) {
-            $table->database = $this->_databaseInfo["database"];
+            $table->database = "";
         }
 
         $tableName = $table->name;

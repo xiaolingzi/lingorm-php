@@ -3,6 +3,7 @@ namespace LingORM;
 
 use LingORM\Drivers\DatabaseConfig;
 use LingORM\Drivers\Mysql\MysqlQuery;
+use LingORM\Drivers\Sqlite\SqliteQuery;
 
 class ORM
 {
@@ -15,6 +16,10 @@ class ORM
         switch ($databaseInfo["driver"]) {
             case "mysql":
                 return new MysqlQuery($databaseInfo);
+            case "sqlite":
+                return new SqliteQuery($databaseInfo);
+            case "sqlite3":
+                return new SqliteQuery($databaseInfo);
             default:
                 return new MysqlQuery($databaseInfo);
         }

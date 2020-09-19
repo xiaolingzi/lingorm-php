@@ -2,7 +2,7 @@
 namespace LingORM\Test\Entity;
 
 /**
- * @Table (name="first_table",database="test")
+ * @Table (name="first_table",database="")
  */
 class FirstTableEntity
 {
