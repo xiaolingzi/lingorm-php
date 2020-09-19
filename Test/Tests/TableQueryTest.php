@@ -1,5 +1,5 @@
 <?php
-namespace LingORM\Test\Mysql;
+namespace LingORM\Test\Tests;
 
 use LingORM\Test\Entity\FirstTableEntity;
 use PHPUnit\Framework\TestCase;
